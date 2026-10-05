@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Информатика: санау жүйелері және кодтау</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Unbounded:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F8FC; --grid:#E2E9F3; --sheet:#FFFFFF; --ink:#18233A; --muted:#5A6782;
+  --line:#D3DCE9; --margin:#AFC2EE; --accent:#2B4EC4; --accent-soft:#E8EEFC;
+  --ok:#157A4A; --ok-bg:#E2F3E9; --bad:#BE3328; --bad-bg:#FBE6E3;
+  --display:"Unbounded", "Arial Black", system-ui, sans-serif;
+  --body:"IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1522; --grid:#172133; --sheet:#141D2D; --ink:#E5EBF5; --muted:#97A5BE;
+    --line:#26324A; --margin:#34477A; --accent:#8AA4FF; --accent-soft:#1C2848;
+    --ok:#56CF91; --ok-bg:#12301F; --bad:#FF8073; --bad-bg:#3A1815;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1522; --grid:#172133; --sheet:#141D2D; --ink:#E5EBF5; --muted:#97A5BE;
+  --line:#26324A; --margin:#34477A; --accent:#8AA4FF; --accent-soft:#1C2848;
+  --ok:#56CF91; --ok-bg:#12301F; --bad:#FF8073; --bad-bg:#3A1815;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 72px)}
+body{
+  margin:0; color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.55;
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:24px 24px;
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:760px; margin:0 auto; padding:0 16px 64px}
+
+header.intro{padding:44px 4px 28px}
+header.intro h1{
+  font-family:var(--display); font-weight:700; font-size:clamp(28px,6.4vw,46px);
+  line-height:1.08; letter-spacing:-0.01em; margin:0 0 14px; max-width:15ch;
+}
+header.intro p{margin:0; color:var(--muted); max-width:52ch}
+
+.bar{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:5;
+  background:color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line); margin:0 -16px; padding:10px 16px;
+}
+.bar-inner{max-width:760px; margin:0 auto; display:flex; align-items:center; gap:14px; font-size:15px}
+.track{flex:1; height:8px; border-radius:99px; background:var(--line); overflow:hidden; display:flex}
+.track span{height:100%; transition:width .35s ease}
+.track .t-ok{background:var(--ok)} .track .t-bad{background:var(--bad)}
+.stat{white-space:nowrap; color:var(--muted)}
+.stat b{color:var(--ink); font-weight:600}
+
+.sheet{
+  margin-top:20px; background:var(--sheet); border:1px solid var(--line); border-radius:16px;
+  position:relative; overflow:hidden;
+}
+.sheet::before{
+  content:""; position:absolute; top:0; bottom:0; left:64px; width:2px; background:var(--margin);
+}
+.q{display:grid; grid-template-columns:64px 1fr; border-top:1px solid var(--line)}
+.q:first-child{border-top:0}
+.num{
+  font-family:var(--display); font-weight:500; font-size:22px; color:var(--accent);
+  text-align:center; padding-top:26px;
+}
+.body{padding:24px 22px 26px 22px; min-width:0}
+.topic{font-size:14px; color:var(--muted); margin:0 0 4px}
+.qtext{font-size:19px; font-weight:500; line-height:1.45; margin:0 0 16px}
+
+.opts{display:grid; gap:8px; margin:0; padding:0; list-style:none}
+.opt{
+  width:100%; display:flex; align-items:flex-start; gap:12px; text-align:left;
+  font:inherit; color:inherit; background:transparent; cursor:pointer;
+  border:1.5px solid var(--line); border-radius:12px; padding:11px 14px; line-height:1.4;
+  transition:border-color .15s, background-color .15s;
+}
+.opt:hover:not(:disabled){border-color:var(--accent); background:var(--accent-soft)}
+.opt:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.opt:disabled{cursor:default}
+.letter{
+  flex:none; width:28px; height:28px; border-radius:50%; display:grid; place-items:center;
+  font-weight:600; font-size:14px; border:1.5px solid var(--line); margin-top:-2px;
+}
+.opt-text{padding-top:1px; overflow-wrap:anywhere}
+.opt.is-correct{border-color:var(--ok); background:var(--ok-bg)}
+.opt.is-correct .letter{background:var(--ok); border-color:var(--ok); color:var(--sheet)}
+.opt.is-wrong{border-color:var(--bad); background:var(--bad-bg)}
+.opt.is-wrong .letter{background:var(--bad); border-color:var(--bad); color:var(--sheet)}
+.opt.is-dim{opacity:.55}
+
+.fb{display:grid; grid-template-rows:0fr; transition:grid-template-rows .35s ease}
+.fb.open{grid-template-rows:1fr}
+.fb > div{overflow:hidden}
+.fb-card{margin-top:14px; padding:14px 16px; border-radius:12px; border-left:4px solid var(--ok); background:var(--ok-bg)}
+.fb.bad .fb-card{border-left-color:var(--bad); background:var(--bad-bg)}
+.verdict{font-weight:600; margin:0 0 4px; color:var(--ok)}
+.fb.bad .verdict{color:var(--bad)}
+.verdict span{color:var(--ink); font-weight:500}
+.expl{margin:0; overflow-wrap:anywhere}
+
+.result{
+  display:none; margin-top:20px; padding:26px 24px; border-radius:16px;
+  background:var(--sheet); border:1px solid var(--line);
+}
+.result.show{display:block}
+.result h2{font-family:var(--display); font-weight:700; font-size:clamp(24px,5vw,34px); margin:0 0 6px; line-height:1.15}
+.result p{margin:0 0 18px; color:var(--muted)}
+.actions{display:flex; flex-wrap:wrap; gap:10px}
+.btn{
+  font:inherit; font-weight:600; font-size:16px; cursor:pointer; border-radius:12px; padding:12px 18px;
+  border:1.5px solid var(--accent); background:var(--accent); color:var(--sheet);
+}
+.btn.ghost{background:transparent; color:var(--accent)}
+.btn:focus-visible{outline:3px solid var(--accent); outline-offset:2px}
+.btn[hidden]{display:none}
+
+@media (max-width:560px){
+  body{font-size:16px}
+  .sheet::before{left:44px}
+  .q{grid-template-columns:44px 1fr}
+  .num{font-size:17px; padding-top:22px}
+  .body{padding:20px 14px 22px 14px}
+  .qtext{font-size:17px}
+  .opt{padding:10px 12px; gap:10px}
+}
+@media (prefers-reduced-motion: reduce){
+  .fb,.track span,.opt{transition:none}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <h1>Санау жүйелері және ақпаратты кодтау</h1>
+    <p>15 сұрақ. Жауапты таңдасаң, дұрыс па, қате ме бірден көресің, ал түсіндірме сол сұрақтың астында ашылады.</p>
+  </header>
+
+  <div class="bar" role="status" aria-live="polite">
+    <div class="bar-inner">
+      <div class="track" aria-hidden="true"><span class="t-ok" id="tOk" style="width:0"></span><span class="t-bad" id="tBad" style="width:0"></span></div>
+      <div class="stat">Дұрыс <b id="sOk">0</b> / <b id="sDone">0</b></div>
+    </div>
+  </div>
+
+  <main class="sheet" id="sheet"></main>
+
+  <section class="result" id="result" aria-live="polite">
+    <h2 id="rTitle"></h2>
+    <p id="rText"></p>
+    <div class="actions">
+      <button class="btn" id="retryWrong" type="button">Қателерді қайта шешу</button>
+      <button class="btn ghost" id="restart" type="button">Басынан бастау</button>
+    </div>
+  </section>
+</div>
+
+<script>
+const Q = [
+  {t:"Санау жүйелері", q:"Берілген сандардың қайсысы ең үлкен?",
+   o:["110011₂","64₈","35₁₆","50₁₀"], a:2,
+   e:"Барлығын ондыққа аударамыз: 110011₂ = 32 + 16 + 2 + 1 = 51; 64₈ = 6·8 + 4 = 52; 35₁₆ = 3·16 + 5 = 53; 50₁₀ = 50. Ең үлкені 53, яғни 35₁₆."},
+  {t:"Бөлшек сандар", q:"0,625₁₀ санын екілік санау жүйесіне аударыңыз.",
+   o:["0,011₂","0,110₂","0,101₂","0,1001₂"], a:2,
+   e:"Бөлшек бөлігін 2-ге көбейтіп, бүтін бөліктерін ретімен жазамыз: 0,625·2 = 1,25 → 0,25·2 = 0,5 → 0,5·2 = 1,0. Нәтиже 0,101₂. A нұсқасы цифрларды кері ретпен жазған қате (бүтін санды бөлгендегідей)."},
+  {t:"Ақпаратты кодтау", q:"Бастапқы 7 биттік ASCII кестесінде неше символ кодталған?",
+   o:["127","128","256","65 536"], a:1,
+   e:"2⁷ = 128 символ, кодтары 0-ден 127-ге дейін. A нұсқасы соңғы кодты символ санымен шатастырған қате. 256 — 8 биттік ASCII, 65 536 — 16 биттік Unicode."},
+  {t:"Өлшем бірліктері", q:"3 Кбайт неше битке тең?",
+   o:["3 072","24 000","24 576","12 288"], a:2,
+   e:"3 Кбайт = 3·1024 = 3 072 байт, 3 072·8 = 24 576 бит. A нұсқасы байтта қалып қойған қате, B нұсқасы 1 Кбайт = 1000 байт деп алған қате."},
+  {t:"Алфавиттік әдіс", q:"2 048 символдан тұратын хабардың ақпараттық көлемі 1,5 Кбайт. Хабар жазылған әліпбидің қуаттылығы қанша?",
+   o:["6","32","64","128"], a:2,
+   e:"I = 1,5·1024·8 = 12 288 бит. i = I : K = 12 288 : 2 048 = 6 бит. N = 2ⁱ = 2⁶ = 64. A нұсқасы символдың салмағын (i) әліпби қуаттылығымен (N) шатастырған қате."},
+  {t:"Санау жүйелері", q:"Позициялық емес санау жүйесіне мысал:",
+   o:["Екілік","Ондық","Римдік","Он алтылық"], a:2,
+   e:"Позициялық емес жүйеде цифрдың мәні оның тұрған орнына тәуелді емес. Мысалы, XXXVI санындағы әр X кез келген орында 10-ға тең. Мұндай жүйе негізінен нөмірлеуге қолданылады."},
+  {t:"Санау жүйелері", q:"Позициялық емес санау жүйесінің кемшілігіне жатпайды:",
+   o:["Үлкен сандарды жазу үшін жаңа таңбалар енгізу қажет","Бөлшек және теріс сандарды өрнектеу мүмкін емес","Арифметикалық амалдарды орындау қиын","Цифрдың мәні оның жазылу орнына тәуелді"], a:3,
+   e:"Цифр мәнінің орнына тәуелді болуы — позициялық жүйенің анықтамасы, кемшілік емес. A, B, C нұсқалары материалда аталған кемшіліктер."},
+  {t:"Санау жүйелері", q:"Компьютерде ақпаратты екілік жүйеде ұсынудың себебі:",
+   o:["Екілік жүйеде есептеу ондыққа қарағанда жылдам","Компьютердің сақтау элементтері тек екі тұрақты күйде бола алады","Екілік сандар ондық сандардан қысқа жазылады","Екілік жүйе ең ежелгі санау жүйесі"], a:1,
+   e:"Сақтау элементі тек екі күйдің бірінде болады, олар «0» және «1» деп белгіленеді. Сондықтан барлық ақпарат 0 мен 1 комбинациясы ретінде беріледі. C нұсқасы қате, себебі екілік жазба керісінше ұзынырақ."},
+  {t:"Ақпаратты кодтау", q:"Кодталған ақпаратты бастапқы түріне қайта келтіру процесі:",
+   o:["Кодтау","Декодтау","Кодтау кестесі","Код"], a:1,
+   e:"Кодтау — ақпаратты белгілі бір алфавит арқылы өзгертіп ұсыну. Код — бір белгі тобынан екіншісіне көшіру ережесі. Кодтау кестесі — символдарды кодтау комбинацияларының жиынтығы."},
+  {t:"ASCII", q:"ASCII кестесінің баламалы бөлігі туралы дұрыс тұжырым:",
+   o:["0–127 кодтар, латын әріптері мен тыныс белгілері","128–255 кодтар, ұлттық әліпбилер (орыс, қазақ т.б.)","0–31 кодтар, терілмейтін басқару символдары","128–65 535 кодтар, әлемнің барлық тілдері"], a:1,
+   e:"ASCII екі бөліктен тұрады. Стандартты бөлігі (0–127) латын әріптері, тыныс белгілері және басқару символдары, яғни A нұсқасы. Баламалы бөлігі (128–255) ұлттық әліпбилер. D нұсқасы Unicode-қа қатысты."},
+  {t:"Unicode", q:"Интернетте ең кең тараған Unicode ұсыну түрі:",
+   o:["UTF-8","UTF-16","UTF-32","CP866"], a:0,
+   e:"Интернетте UTF-8, ал Windows жүйесінде UTF-16 қолданылады. UTF-8-де алғашқы 128 символ 1 байтпен кодталады, сондықтан ол ASCII-мен үйлесімді. CP866 Unicode түрі емес."},
+  {t:"Басқа кодтау стандарттары", q:"Орыс әріптері үшін хронологиялық тұрғыда ең бірінші жасалған кодтау стандарты:",
+   o:["CP866","ISO 8859-5","KOI8","Mac"], a:2,
+   e:"KOI8 70-жылдары ЕС ЭВМ сериясында қолданылған. CP866 90-жылдардың басында MS DOS кезінде пайда болды. ISO 8859-5 стандартын халықаралық ISO ұйымы ұсынған. Mac — Apple компьютерлерінің жеке кодтауы."},
+  {t:"Графикалық ақпаратты кодтау", q:"Дисплей бетінде көрсетілетін ең кіші бейнесызбалық бірлік:",
+   o:["Бит","Байт","Пиксель","Вектор"], a:2,
+   e:"Растрлық графикада бейненің әр пикселінің түсі белгілі бір бит санымен кодталады. Бит пен байт — ақпарат өлшем бірліктері, бейне бірлігі емес."},
+  {t:"Ақпаратты өлшеу", q:"Ақпаратты өлшеудің ең кіші бірлігі және ақпаратты өңдеу мен берудің ең кіші бірлігі сәйкесінше:",
+   o:["Байт және бит","Бит және байт","Бит және символ","Символ және байт"], a:1,
+   e:"Бит (binary digit) — ақпаратты өлшеудің ең кіші бірлігі. Байт (8 бит) — ақпаратты өңдеу мен берудің ең кіші бірлігі, әдетте бір символ бір байтпен кодталады."},
+  {t:"Алфавиттік әдіс", q:"Әліпби қуаттылығы (N) дегеніміз:",
+   o:["Бір символды кодтауға қажет бит саны","Хабардағы символдар саны","Әліпбиде қолданылатын символдар саны","Хабардың ақпараттық көлемі"], a:2,
+   e:"A нұсқасы символдың ақпараттық салмағы (i), B нұсқасы K, D нұсқасы I. Бұл белгілерді шатастыру алфавиттік есептердегі ең жиі қате, сондықтан сұрақ 5-есеппен байланысты."}
+];
+
+const L = ["A","B","C","D","E","F"];
+const answers = Q.map(() => null);
+const sheet = document.getElementById("sheet");
+
+function el(tag, cls, text){
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+function build(){
+  sheet.innerHTML = "";
+  Q.forEach((item, qi) => {
+    const art = el("article","q"); art.id = "q" + qi;
+    art.appendChild(el("div","num", String(qi + 1)));
+    const body = el("div","body");
+    body.appendChild(el("p","topic", item.t));
+    const qt = el("p","qtext", item.q); qt.id = "qt" + qi;
+    body.appendChild(qt);
+
+    const ul = el("ul","opts");
+    ul.setAttribute("role","group");
+    ul.setAttribute("aria-labelledby","qt" + qi);
+    item.o.forEach((txt, oi) => {
+      const li = el("li");
+      const b = el("button","opt"); b.type = "button";
+      b.appendChild(el("span","letter", L[oi]));
+      b.appendChild(el("span","opt-text", txt));
+      b.addEventListener("click", () => choose(qi, oi));
+      li.appendChild(b); ul.appendChild(li);
+    });
+    body.appendChild(ul);
+
+    const fb = el("div","fb"); fb.setAttribute("aria-live","polite");
+    const inner = el("div"); const card = el("div","fb-card");
+    const v = el("p","verdict"); const ex = el("p","expl", item.e);
+    card.appendChild(v); card.appendChild(ex); inner.appendChild(card); fb.appendChild(inner);
+    body.appendChild(fb);
+
+    art.appendChild(body);
+    sheet.appendChild(art);
+  });
+  refresh();
+}
+
+function paint(qi){
+  const item = Q[qi], chosen = answers[qi];
+  const art = document.getElementById("q" + qi);
+  const btns = art.querySelectorAll(".opt");
+  const fb = art.querySelector(".fb");
+  const v = art.querySelector(".verdict");
+  btns.forEach((b, oi) => {
+    b.classList.remove("is-correct","is-wrong","is-dim");
+    b.disabled = chosen !== null;
+    b.removeAttribute("aria-label");
+    if (chosen === null) return;
+    if (oi === item.a) b.classList.add("is-correct");
+    else if (oi === chosen) b.classList.add("is-wrong");
+    else b.classList.add("is-dim");
+  });
+  if (chosen === null){ fb.classList.remove("open","bad"); v.textContent = ""; return; }
+  const right = chosen === item.a;
+  fb.classList.toggle("bad", !right);
+  v.textContent = "";
+  if (right){
+    v.textContent = "Дұрыс!";
+  } else {
+    v.appendChild(document.createTextNode("Қате. "));
+    v.appendChild(el("span", null, "Дұрыс жауап: " + L[item.a] + ") " + item.o[item.a]));
+  }
+  requestAnimationFrame(() => fb.classList.add("open"));
+}
+
+function choose(qi, oi){
+  if (answers[qi] !== null) return;
+  answers[qi] = oi;
+  paint(qi);
+  refresh();
+}
+
+function refresh(){
+  const done = answers.filter(a => a !== null).length;
+  const ok = answers.filter((a, i) => a === Q[i].a).length;
+  const bad = done - ok;
+  document.getElementById("sOk").textContent = ok;
+  document.getElementById("sDone").textContent = done;
+  document.getElementById("tOk").style.width = (ok / Q.length * 100) + "%";
+  document.getElementById("tBad").style.width = (bad / Q.length * 100) + "%";
+
+  const res = document.getElementById("result");
+  if (done === Q.length){
+    res.classList.add("show");
+    document.getElementById("rTitle").textContent = Q.length + " сұрақтан " + ok + " дұрыс";
+    document.getElementById("rText").textContent = bad === 0
+      ? "Барлығы дұрыс. Тақырып жақсы меңгерілген."
+      : "Қате кеткен " + bad + " сұрақты қайта шешіп көр. Түсіндірмелерді оқығаннан кейін оңайырақ болады.";
+    document.getElementById("retryWrong").hidden = bad === 0;
+  } else {
+    res.classList.remove("show");
+  }
+}
+
+document.getElementById("retryWrong").addEventListener("click", () => {
+  let first = -1;
+  answers.forEach((a, i) => {
+    if (a !== null && a !== Q[i].a){ answers[i] = null; paint(i); if (first < 0) first = i; }
+  });
+  refresh();
+  if (first >= 0){
+    const target = document.getElementById("q" + first);
+    target.scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+    target.querySelector(".opt").focus({preventScroll:true});
+  }
+});
+
+document.getElementById("restart").addEventListener("click", () => {
+  answers.fill(null);
+  Q.forEach((_, i) => paint(i));
+  refresh();
+  window.scrollTo({top:0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+});
+
+build();
+</script>
+</body>
+</html>
